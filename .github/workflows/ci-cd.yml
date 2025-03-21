@@ -1,0 +1,70 @@
+
+name: CI/CD para Django
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Instalar dependencias
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Aplicar migraciones
+        run: |
+          source venv/bin/activate
+          python manage.py migrate
+
+      - name: Ejecutar pruebas automatizadas
+        run: |
+          source venv/bin/activate
+          pytest --maxfail=5 --disable-warnings -v
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Verificar Secrets
+        run: |
+          echo "Verificando usuario de Docker: ${{ secrets.DOCKERUSERNAME }}"
+          if [ -z "${{ secrets.DOCKERPASSWORD }}" ]; then echo "⚠️ DOCKERPASSWORD está vacío"; exit 1; fi
+          if [ -z "${{ secrets.DOCKERUSERNAME }}" ]; then echo "⚠️ DOCKERUSERNAME está vacío"; exit 1; fi
+
+      - name: Iniciar sesión en Docker Hub
+        run: echo "${{ secrets.DOCKERPASSWORD }}" | docker login -u "${{ secrets.DOCKERUSERNAME }}" --password-stdin
+
+      - name: Construir imagen Docker
+        run: docker build -t ${{ secrets.DOCKERUSERNAME }}/web_user_django:latest .
+
+      - name: Subir imagen a Docker Hub
+        run: docker push ${{ secrets.DOCKERUSERNAME }}/web_user_django:latest
+
+      - name: Desplegar aplicación
+        run: |
+          echo "Desplegando la aplicación..."
+          # Aquí puedes agregar comandos específicos de despliegue (Ej: docker-compose, kubectl, SSH)
