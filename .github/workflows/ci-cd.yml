@@ -24,38 +24,32 @@ jobs:
       - name: Instalar dependencias
         run: |
           python -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest-django pytest-cov selenium
+          . venv/bin/activate && pip install --upgrade pip
+          . venv/bin/activate && pip install -r requirements.txt
+          . venv/bin/activate && pip install pytest-django pytest-cov selenium
 
       - name: Aplicar migraciones
         run: |
-          source venv/bin/activate
-          python manage.py migrate
+          . venv/bin/activate && python manage.py migrate
 
       - name: Ejecutar pruebas unitarias
         run: |
-          source venv/bin/activate
-          pytest --maxfail=5 --disable-warnings -v crud_user/tests/test_unitarias.py
+          . venv/bin/activate && pytest --maxfail=5 --disable-warnings -v crud_user/tests/test_unitarias.py
 
       - name: Ejecutar pruebas de integración
         run: |
-          source venv/bin/activate
-          pytest --maxfail=5 --disable-warnings -v crud_user/tests/test_integracion.py
+          . venv/bin/activate && pytest --maxfail=5 --disable-warnings -v crud_user/tests/test_integracion.py
 
       - name: Configurar Chrome para pruebas UI
         uses: browser-actions/setup-chrome@latest
 
       - name: Ejecutar pruebas funcionales/UI
         run: |
-          source venv/bin/activate
-          pytest --maxfail=5 --disable-warnings -v crud_user/tests/test_funcionales.py
+          . venv/bin/activate && pytest --maxfail=5 --disable-warnings -v crud_user/tests/test_funcionales.py
 
       - name: Generar reporte de cobertura
         run: |
-          source venv/bin/activate
-          pytest --cov=crud_user --cov-report=xml
+          . venv/bin/activate && pytest --cov=crud_user --cov-report=xml
 
       - name: Subir resultados de pruebas
         uses: actions/upload-artifact@v4
