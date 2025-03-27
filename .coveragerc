@@ -1,0 +1,23 @@
+[run]
+source = crud_user
+omit = 
+    */migrations/*
+    */tests/*
+    */venv/*
+    */settings.py
+    */wsgi.py
+    */asgi.py
+    */admin.py
+    manage.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __str__
+    def __repr__
+    if settings.DEBUG
+    raise NotImplementedError
+    except ImportError
+
+[html]
+directory = coverage_html_report
